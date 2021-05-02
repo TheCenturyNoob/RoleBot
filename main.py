@@ -95,7 +95,7 @@ async def passwort(ctx: Context, *args) -> None:
         return
     config[MASTER_ROLES_HANDLE][int(role.id)] = str(pw)
     await save_config(str(ctx.guild.id), config)
-    await ctx.author.send(f'Habe das Passwort für {role.name} auf {pw} geändert.')
+    await ctx.author.send(f'Habe das Passwort für {role.name} auf `{pw}` geändert.')
     log.info(f'passwort - {ctx.author} - OK')
     return
 
@@ -206,6 +206,8 @@ async def meister(ctx: Context, *args) -> None:
         for role_id, matches in matches_master_pw:
             if matches:
                 role: Role = guild.get_role(role_id)
+                if not role:
+                    continue
                 await member.add_roles(role)
                 added_on.append((guild.name, role.name))
 
