@@ -194,8 +194,10 @@ async def meister(ctx: Context, *args) -> None:
     user_pw: str = arguments[0]
 
     added_on: List[Tuple[str, str]] = []
+    log.info(f'CLIENT GUILDS: {client.guilds}')
     for guild in client.guilds:
         member = guild.get_member(ctx.author.id)
+        log.info(f'GUILD HAS MEMBER {ctx.author.id}: {guild} - {member}')
         if not member:
             continue
         guild_config = await load_config(guild.id)
