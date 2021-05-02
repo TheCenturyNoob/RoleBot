@@ -1,8 +1,9 @@
 import codecs
+import logging
 import os
 import pickle
 import uuid
-from typing import Tuple, Dict, Optional
+from typing import Tuple, Dict, Optional, List
 
 import discord
 from discord import Role, TextChannel, Guild
@@ -15,6 +16,19 @@ CONFIG_FILE: str = 'configs/{}.pkl'
 MASTER_ROLES_HANDLE: str = 'master_roles'
 STUDENT_ROLES_HANDLE: str = 'student_roles'
 ROLES_MAPPING_HANDLE: str = 'master_student_mapping'
+
+# logger
+log = logging.getLogger()
+log.setLevel(level=logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+fh = logging.FileHandler('rolebot.log')
+fh.setLevel(level=logging.INFO)
+fh.setFormatter(formatter)
+log.addHandler(fh)
+ch = logging.StreamHandler()
+ch.setLevel(level=logging.DEBUG)
+ch.setFormatter(formatter)
+log.addHandler(ch)
 
 
 async def load_config(guild_id: str) -> Dict:
@@ -56,16 +70,18 @@ client: Bot = commands.Bot(intents=intents, command_prefix='!')
 # Startup Information
 @client.event
 async def on_ready() -> None:
-    print('Connected to bot: {}'.format(client.user.name))
-    print('Bot ID: {}'.format(client.user.id))
+    log.info(f'Connected to bot: {client.user.name}')
+    log.info(f'Bot ID: {client.user.id}')
 
 
 @client.command()
 async def passwort(ctx: Context, *args) -> None:
+    log.info(f'passwort - {ctx.author}')
     await ctx.message.delete()
     if len(ctx.message.role_mentions) == 0:
         await ctx.author.send(
             'Bitte benenne eine Rolle um ihr Passwort zu ändern.\n```!passwort <neues_passwort> @meister-rolle```')
+        log.info(f'passwort - {ctx.author} - NOK 1')
         return
     role = ctx.message.role_mentions[0]
     pw = str(args[0])
@@ -75,18 +91,18 @@ async def passwort(ctx: Context, *args) -> None:
     if int(role.id) not in config[MASTER_ROLES_HANDLE]:
         await ctx.author.send(
             'Du kannst nur Passwörter für Meister-Rollen verändern.\n```!passwort <neues_passwort> @meister-rolle```')
+        log.info(f'passwort - {ctx.author} - NOK 2')
         return
     config[MASTER_ROLES_HANDLE][int(role.id)] = str(pw)
     await save_config(str(ctx.guild.id), config)
     ctx.author.send(f'Habe das Passwort für {role.name} auf {pw} geändert.')
+    log.info(f'passwort - {ctx.author} - OK')
     return
 
 
 @client.command()
 async def init(ctx: Context, *args) -> None:
-    """
-    SET UP ROLE MANAGEMENT.
-    """
+    log.info(f'init - {ctx.author} - {ctx.message.content}')
     await ctx.message.delete()
 
     if ctx.author.id not in ADMIN_IDS:
@@ -150,6 +166,7 @@ async def init(ctx: Context, *args) -> None:
 
 @client.command()
 async def reset(ctx: Context) -> None:
+    log.info(f'reset - {ctx.author} - {ctx.message.content}')
     if ctx.author.id not in ADMIN_IDS:
         return
     await ctx.message.delete()
@@ -160,6 +177,7 @@ async def reset(ctx: Context) -> None:
 
 @client.command()
 async def meister(ctx: Context, *args) -> None:
+    log.info(f'meister - {ctx.author} - {ctx.message.content}')
     # IF COMMUNICATION HAPPENED IN A NON-DIRECT CHAT, REMOVE MESSAGE AS IT CONTAINS THE PW
     if type(ctx.channel) is TextChannel:
         await ctx.message.delete()
@@ -203,6 +221,7 @@ async def meister(ctx: Context, *args) -> None:
 
 @client.command()
 async def lehrling(ctx: Context):
+    log.info(f'lehrling - {ctx.author} - {ctx.message.content}')
     # MAKE LIST OF PEOPLE PUPILS
     if len(ctx.message.mentions) == 0:
         await ctx.author.send(
