@@ -39,6 +39,7 @@ async def load_config(guild_id: str) -> Dict:
             config = pickle.load(f)
     else:
         config = {}
+    log.info(f'LOADING GUILD CONFIG {guild_id}: {config}')
     return config
 
 
@@ -201,7 +202,6 @@ async def meister(ctx: Context, *args) -> None:
         if not member:
             continue
         guild_config = await load_config(guild.id)
-        log.info(f'{guild_config}')
 
         matches_master_pw: List[Tuple[int, bool]] = [
             (int(role), str(guild_config[MASTER_ROLES_HANDLE][role]) == user_pw) for role in
