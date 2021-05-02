@@ -33,9 +33,9 @@ log.addHandler(ch)
 
 async def load_config(guild_id: str) -> Dict:
     global CONFIG_FILE
-    CONFIG_FILE = CONFIG_FILE.format(guild_id)
-    if os.path.exists(CONFIG_FILE):
-        with codecs.open(CONFIG_FILE, 'rb') as f:
+    local_config_file = CONFIG_FILE.format(guild_id)
+    if os.path.exists(local_config_file):
+        with codecs.open(local_config_file, 'rb') as f:
             config = pickle.load(f)
     else:
         config = {}
