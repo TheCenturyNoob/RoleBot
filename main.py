@@ -199,6 +199,7 @@ async def meister(ctx: Context, *args) -> None:
         if not member:
             continue
         guild_config = await load_config(guild.id)
+        log.info(f'{guild_config}')
 
         matches_master_pw: List[Tuple[int, bool]] = [
             (int(role), str(guild_config[MASTER_ROLES_HANDLE][role]) == user_pw) for role in
